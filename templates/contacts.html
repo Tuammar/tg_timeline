@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Поиск контактов</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            height: 100vh;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding-top: 50px;
+        }
+        .search-container {
+            background-color: #e6f7ff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+        }
+        .search-wrapper {
+            display: flex;
+            align-items: center;
+            position: relative;
+            margin-bottom: 20px;
+        }
+        .search-wrapper input {
+            width: calc(100% - 40px);
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px 0 0 5px;
+        }
+        .clear-btn {
+            width: 30px;
+            height: 34px;
+            border: 1px solid #ccc;
+            border-left: none;
+            background-color: #fff;
+            cursor: pointer;
+            border-radius: 0 5px 5px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+        }
+        .clear-btn span {
+            font-size: 18px;
+            line-height: 18px;
+            color: #888;
+        }
+        .contact {
+            background-color: #fff;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+        }
+        .contact .info {
+            display: flex;
+            flex-direction: column;
+        }
+        .contact .info .name {
+            font-weight: bold;
+        }
+        .contact .info .id {
+            color: #888;
+        }
+        .contact .rating {
+            font-weight: bold;
+            color: #4CAF50;
+        }
+        .contact.interactive {
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .contact.interactive:hover {
+            background-color: #d1e7ff;
+        }
+    </style>
+</head>
+<body>
+    <div class="search-container">
+        <div class="search-wrapper">
+            <input type="text" id="search" placeholder="Поиск..." oninput="search()" value="{{ query }}">
+            <button class="clear-btn" onclick="clearSearch()"><span>✕</span></button>
+        </div>
+        <div id="contacts-list">
+            {% for contact in contacts %}
+                <div class="contact {% if contact.id %}interactive{% endif %}" onclick="goToTimeline({{ contact.id }})">
+                    <div class="info">
+                        <span class="name">{{ contact.name }}</span>
+                        <span class="id">ID: {{ contact.id }}</span>
+                        <span class="rating">Rating: {{ contact.rating }}</span>
+                    </div>
+                </div>
+            {% endfor %}
+            {% for contact in all_contacts %}
+                <div class="contact">
+                    <div class="info">
+                        <span class="name">{{ contact.name }}</span>
+                        <span class="id">Phone: {{ contact.phone_number }}</span>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <script>
+        function search() {
+            const query = document.getElementById('search').value;
+            fetch(`/search?query=${query}`)
+                .then(response => response.text())
+                .then(html => {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    const newContactsList = doc.getElementById('contacts-list').innerHTML;
+                    document.getElementById('contacts-list').innerHTML = newContactsList;
+                    document.getElementById('search').focus();  // Set focus back to the input field
+                });
+        }
+
+        function goToTimeline(id) {
+            if (id) {
+                window.location.href = `/timeline?id=${id}`;
+            }
+        }
+
+        function clearSearch() {
+            window.location.href = '/contacts';
+        }
+    </script>
+</body>
+</html>
